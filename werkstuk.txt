@@ -1,0 +1,29 @@
+
+Onderdelen:
+    Elevator
+    Schuddebak
+    Molenstenen
+    Pijp
+    Molenaar
+
+Domeinmodel:
+    Types:
+        T: Tijd, in secondes na begin werk
+        G: Hoeveelheid graan, in gram
+        M: Hoeveelheid meel, in gram
+        Z: Hoeveelheid gevukde zakken, als natuurlijke getallen
+    Predicaten:
+        GA t:T x:G -- Hoeveelheid graan op tijdstip t op plek A
+        GB t:T x:G -- Hoeveelheid graan op tijdstip t op plek B
+        GC t:T x:G -- Hoeveelheid graan op tijdstip t op plek C
+        MD t:T x:M -- Hoeveelheid meel op tijdstip t op plek D
+        ME t:T x:M -- Hoeveelheid meel op tijdstip t op plek E
+        ZF t:T z:Z -- Hoeveelheid gevulde zakken
+    Constanten:
+        Elevator:
+            eD:T -- De tijd die het duurt tot de volgende bak langskomt
+            eG:G -- De hoeveelheid graan die in een back past
+            eTD:T -- De totale tijd die het duurt tot een bak boven is
+        Schuddebak:
+            [...]
+
