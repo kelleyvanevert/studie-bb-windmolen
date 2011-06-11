@@ -3,12 +3,12 @@
 Definition T := Z. (* Tijdstippen na start werk *)
 Definition G := Z. (* Hoeveelheid graan in gram *)
 Definition M := Z. (* Hoeveelheid meel in gram *)
-Definition Z := Z. (* Aantal gevulde zakken *)
+Definition ZAKKEN := Z. (* Aantal gevulde zakken *)
 (* Ik wil met natuurlijke getallen werken, maar Coq geeft dan veel problemen,
    dus los ik het natuurlijk gewoon zo op: *)
 Open Scope Z_scope.
 Axiom Natuurlijk: (forall x:T, x >= 0) /\ (forall x:G, x >= 0)
-               /\ (forall x:M, x >= 0) /\ (forall x:Z, x >= 0).
+               /\ (forall x:M, x >= 0) /\ (forall x:ZAKKEN, x >= 0).
 
 (* Of er (genoeg, etc) stroom naar de elevator gaat *)
 Variable stroom: B.
@@ -34,8 +34,9 @@ Variables GA GB GC: T -> G -> B.
     MD t m: Er is {m} gram meel op tijdstip {t} aanwezig op plek D
     - D: bovenaan de pijp
     - E: invoer zak
+    - Z: in de zak -- deze wordt gebruikt in Molenaar
 *)
-Variables MD ME:    T -> M -> B.
+Variables MD ME MZ: T -> M -> B.
 
 (*
     Predikaat ZF
@@ -51,6 +52,10 @@ Definition rMin := 20. (* Minimale rotatie *)
 Definition eD:T  := 3%Z.   (* tijd tot volgende bak *)
 Definition eG:G  := 500%Z. (* hoeveelheid graan per bak *)
 Definition eTD:G := 30%Z.  (* tijd tot bak boven is *)
+
+(* Constanten > Molenaar *)
+Definition zMin:M := 15000. (* Minimale meel in zak (inclusief) *)
+Definition zMax:M := 25000. (* Maximale meel in zak (exclusief) *)
 
 (*
     IN:  stroom, GA
@@ -95,7 +100,19 @@ Definition Pijp := TODO.
     IN:  ME
     UIT: ZF
 *)
-Definition Molenaar := TODO.
+Definition Molenaar :=
+    (* Begintoestand: nog geen meel in zak, nog geen gevulde zakken *)
+    (MZ 0 0) /\
+    (ZF 0 0) /\
+    (* De zak mag nooit overstromen *)
+    ~(exists t:T, exists m:M, MZ t m /\ m >= zMax) /\
+    (* Verder geldt dat.. *)
+    (forall t:T, forall mprev:M, forall madd:M, forall zprev:ZAKKEN,
+        (* Zak wordt enkel bijgevuld door toevoer stroom meel *)
+        (                 MZ (t + 1) (mprev + madd) /\ ZF (t + 1) zprev) \/
+        (* OF, indien al meer dan {zMin} meel in zak, nieuwe zak! *)
+        (mprev >= zMin /\ MZ (t + 1) madd           /\ ZF (t + 1) (zprev + 1))
+    ).
 
 (*
     Specificatie van het geheel
