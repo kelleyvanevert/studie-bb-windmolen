@@ -32,7 +32,7 @@ Variables GA GB GC: T -> G -> B.
 (*
     Predikaten MD, ME
     MD t m: Er is {m} gram meel op tijdstip {t} aanwezig op plek D
-    - D: bovenaan de pijp
+    - D: bovenaan de meelpijp
     - E: invoer zak
     - Z: in de zak -- deze wordt gebruikt in Molenaar
 *)
@@ -52,6 +52,10 @@ Definition rMin := 20. (* Minimale rotatie *)
 Definition eD:T  := 3%Z.   (* tijd tot volgende bak *)
 Definition eG:G  := 500%Z. (* hoeveelheid graan per bak *)
 Definition eTD:G := 30%Z.  (* tijd tot bak boven is *)
+
+(* Constanten > Meelpijp *)
+Definition pCap:M := 200. (* De capaciteit, dus de maximale hoeveelheid meel, dat per seconde door de meelpijp kan *)
+Definition pTD:T  := 5.   (* De tijdsduur die het duurt tot meel van de ingang naar de uitgang van de meelpijp gaat *)
 
 (* Constanten > Molenaar *)
 Definition zMin:M := 15000. (* Minimale meel in zak (inclusief) *)
@@ -94,7 +98,13 @@ Definition Molenstenen := TODO.
     IN:  MD
     UIT: ME
 *)
-Definition Pijp := TODO.
+Definition Meelpijp :=
+    (MD 0 0) /\
+    (ME 0 0) /\
+    (forall t:T, forall m:M,
+        (m > pCap -> MD t m -> ME (t + pTD) pCap)
+     /\ (m < pCap -> MD t m -> ME (t + pTD) m)
+    ).
 
 (*
     IN:  ME
@@ -108,10 +118,13 @@ Definition Molenaar :=
     ~(exists t:T, exists m:M, MZ t m /\ m >= zMax) /\
     (* Verder geldt dat.. *)
     (forall t:T, forall mprev:M, forall madd:M, forall zprev:ZAKKEN,
-        (* Zak wordt enkel bijgevuld door toevoer stroom meel *)
-        (                 MZ (t + 1) (mprev + madd) /\ ZF (t + 1) zprev) \/
-        (* OF, indien al meer dan {zMin} meel in zak, nieuwe zak! *)
-        (mprev >= zMin /\ MZ (t + 1) madd           /\ ZF (t + 1) (zprev + 1))
+        (MZ t mprev /\ ME t madd /\ ZF t zprev)
+     -> (
+            (* Zak wordt enkel bijgevuld door toevoer stroom meel *)
+            (                 MZ (t + 1) (mprev + madd) /\ ZF (t + 1) zprev) \/
+            (* OF, indien al meer dan {zMin} meel in zak, nieuwe zak! *)
+            (mprev >= zMin /\ MZ (t + 1) madd           /\ ZF (t + 1) (zprev + 1))
+        )
     ).
 
 (*
